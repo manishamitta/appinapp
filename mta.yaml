@@ -1,0 +1,153 @@
+_schema-version: "3.1"
+ID: appinapp
+description: A simple CAP project.
+version: 1.0.0
+modules:
+  - name: appinapp-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: appinapp-db
+      - name: uaa_appinapp
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+      readiness-health-check-http-endpoint: /health
+      readiness-health-check-type: http
+    build-parameters:
+      builder: npm
+  - name: appinapp-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: appinapp-db
+    parameters:
+      buildpack: nodejs_buildpack
+  - name: appinapp-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: appinapp-destination-service
+        parameters:
+          content-target: true
+      - name: appinapp_html_repo_host
+        parameters:
+          service-key:
+            name: appinapp_html_repo_host-key
+      - name: uaa_appinapp
+        parameters:
+          service-key:
+            name: uaa_appinapp-key
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: appin_appinapp_html_repo_host
+              ServiceInstanceName: appinapp-html5-app-host-service
+              ServiceKeyName: appinapp_html_repo_host-key
+              sap.cloud.service: appin
+            - Authentication: OAuth2UserTokenExchange
+              Name: appin_uaa_appinapp
+              ServiceInstanceName: appinapp-xsuaa-service
+              ServiceKeyName: uaa_appinapp-key
+              sap.cloud.service: appin
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: appinapp-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: appinapp_html_repo_host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - project1.zip
+          name: project1
+          target-path: resources/
+        - artifacts:
+            - project2.zip
+          name: project2
+          target-path: resources/
+  - name: project1
+    type: html5
+    path: app/project1
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms:
+        []
+  - name: project2
+    type: html5
+    path: app/project2
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms:
+        []
+resources:
+  - name: appinapp-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: appinapp-destination-service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+              - Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                Name: appinapp-srv-api
+                ProxyType: Internet
+                Type: HTTP
+                URL: ~{srv-api/srv-url}
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: appinapp-destination-service
+      service-plan: lite
+    requires:
+      - name: srv-api
+  - name: appinapp_html_repo_host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: appinapp-html5-app-host-service
+      service-plan: app-host
+  - name: uaa_appinapp
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: appinapp-xsuaa-service
+      service-plan: application
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production

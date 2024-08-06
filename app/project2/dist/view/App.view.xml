@@ -1,0 +1,19 @@
+<mvc:View xmlns:filterbar="sap.ui.comp.filterbar" controllerName="project2.controller.App"
+	xmlns:mvc="sap.ui.core.mvc" displayBlock="true" xmlns="sap.m"
+	xmlns:u ="sap.uxap"
+	xmlns:core="sap.ui.core"
+	xmlns:upload="sap.m.upload">
+	<NavContainer id="wizardNavContainer" height="100vh">
+		<pages>
+			<Page id="wizardContentPage" showHeader="false">
+			<content>
+			<VBox id= "vb">
+                        <Text id= "txt" text="AppInApp"/>
+                        <!-- Original content -->
+                        <core:ComponentContainer id="screen1" propagateModel="true" height="600px" objectBindings="b"/>
+                    </VBox>
+            </content>
+ </Page>
+		</pages>
+	</NavContainer>
+</mvc:View>

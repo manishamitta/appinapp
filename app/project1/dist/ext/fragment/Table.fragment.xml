@@ -1,0 +1,37 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:macros="sap.fe.macros">
+	<!-- <VBox id = "vb">
+		<Text id = "txt" text="Table" />
+		
+	</VBox> -->
+		<Table id="idProductsTable"
+		inset="false"
+		items="{
+			path: '/student'
+		}">
+		<columns>
+			<Column id = "c1"
+				width="12em">
+				<Text id = "t1" text="id" />
+			</Column>
+			<Column id = "c2"
+				minScreenWidth="Tablet"
+				demandPopin="true">
+				<Text id = "t2" text="name" />
+			</Column>
+			
+		</columns>
+		<items>
+			<ColumnListItem id = "cl" type="Navigation" press="onListPressed" vAlign="Middle">
+			    <cells>
+																	
+				<Text  text="{id}"></Text>
+				<Text id = "t4" text="{name}"></Text>
+																	
+				</cells>
+			</ColumnListItem>
+		</items>
+
+
+
+		</Table>
+</core:FragmentDefinition>

@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/core/mvc/ControllerExtension"],function(e){"use strict";return e.extend("project1.ext.controller.Controllerid",{override:{onInit:function(){debugger;var e=this.base.getExtensionAPI().getModel()}}})});
+//# sourceMappingURL=Controllerid.controller.js.map
